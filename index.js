@@ -85,7 +85,10 @@ async function run() {
     // get all Rooms data
 
   app.get('/rooms',async(req,res) =>{
-    const result =await roomCollection.find().toArray()
+    const category =req.query.category;
+    let query ={}
+    if(category && category !== 'null') query ={ category }
+    const result =await roomCollection.find(query).toArray()
     res.send(result)
   })
 
@@ -95,6 +98,12 @@ async function run() {
     const id =req.params.id
     const query ={_id :new ObjectId(id)}
     const result = await roomCollection.findOne(query)
+    res.send (result)
+  })
+
+  app.post('/room',async(req,res) =>{
+    const roomData = req.body;
+    const result =await roomCollection.insertOne(roomData)
     res.send (result)
   })
 
