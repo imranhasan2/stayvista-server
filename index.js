@@ -88,10 +88,10 @@ async function run() {
     app.put('/user', async (req, res) => {
       const user = req.body;
       const query = { email: user?.email };
-    
+
       // Check if the user already exists
       const isExist = await userCollection.findOne(query);
-    
+
       if (isExist) {
         // If the user exists and the status is 'Requested', update only the status
         if (user.status === 'Requested') {
@@ -103,17 +103,17 @@ async function run() {
         // Return the existing user data to avoid unnecessary operations
         return res.send(isExist);
       }
-    
+
       // If the user doesn't exist, create a new entry
       const options = { upsert: true };
-    
+
       const updateDoc = {
         $set: {
           ...user,              // Set the user data
           timestamp: new Date(), // Add a timestamp to the user's document
         },
       };
-    
+
       try {
         const result = await userCollection.updateOne(query, updateDoc, options);
         res.send(result);
@@ -121,7 +121,32 @@ async function run() {
         res.status(500).send({ message: 'Error saving user', error });
       }
     });
-    
+
+    // get user by role from db
+    app.get('/user/:email', async (req, res) => {
+      const email = req.params.email;
+      const result = await userCollection.findOne({ email })
+      res.send(result)
+    })
+
+
+    // update user role
+    app.patch('/users/update/:email', async (req, res) => {
+
+      const email = req.params.email;
+      const user = req.body;
+      console.log('Email:', email);
+      const query = { email }
+      const updateDoc = {
+        $set: {
+          ...user,timestamp: Date.now()
+        }
+      }
+      const result =await userCollection.updateOne(query,updateDoc)
+      res.send(result)
+
+    })
+
     // get all user
 
     app.get('/users', async (req, res) => {
